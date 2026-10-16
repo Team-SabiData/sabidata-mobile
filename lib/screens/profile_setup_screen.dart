@@ -34,16 +34,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   bool _loadingRef = true;
 
   static const _fallbackLanguages = [
-    {'name': 'Mooré',      'code': 'moore',    'sub': 'Plateau Central', 'color': Color(0xFFE11D28), 'icon': Icons.terrain_rounded},
-    {'name': 'Dioula',     'code': 'dioula',   'sub': 'Ouest',           'color': Color(0xFF1A9E78), 'icon': Icons.storefront_rounded},
-    {'name': 'Fulfuldé',   'code': 'fulfulde', 'sub': 'Sahel',           'color': Color(0xFF2A5298), 'icon': Icons.pets_rounded},
+    {'name': 'Mooré',      'code': 'moore',    'sub': 'Oubri',     'color': Color(0xFFE11D28), 'icon': Icons.terrain_rounded},
+    {'name': 'Dioula',     'code': 'dioula',   'sub': 'Guiriko',   'color': Color(0xFF1A9E78), 'icon': Icons.storefront_rounded},
+    {'name': 'Fulfuldé',   'code': 'fulfulde', 'sub': 'Liptako',   'color': Color(0xFF2A5298), 'icon': Icons.pets_rounded},
   ];
 
+  // Toponymes officiels BF (décret juil. 2025)
   static const _fallbackRegions = [
-    {'name': 'Nord', 'zone': 'Nord', 'clips': 0, 'pct': 0.0, 'rare': 1, 'lang': 'Mooré'},
-    {'name': 'Centre', 'zone': 'Centre', 'clips': 0, 'pct': 0.0, 'rare': 0, 'lang': 'Mooré'},
-    {'name': 'Hauts-Bassins', 'zone': 'Hauts-Bassins', 'clips': 0, 'pct': 0.0, 'rare': 0, 'lang': 'Dioula'},
-    {'name': 'Sahel', 'zone': 'Sahel', 'clips': 0, 'pct': 0.0, 'rare': 2, 'lang': 'Fulfuldé'},
+    {'name': 'Yaadga', 'zone': 'Yaadga', 'clips': 0, 'pct': 0.0, 'rare': 1, 'lang': 'Mooré'},
+    {'name': 'Kadiogo', 'zone': 'Kadiogo', 'clips': 0, 'pct': 0.0, 'rare': 0, 'lang': 'Mooré'},
+    {'name': 'Guiriko', 'zone': 'Guiriko', 'clips': 0, 'pct': 0.0, 'rare': 0, 'lang': 'Dioula'},
+    {'name': 'Liptako', 'zone': 'Liptako', 'clips': 0, 'pct': 0.0, 'rare': 2, 'lang': 'Fulfuldé'},
   ];
 
   @override
@@ -133,8 +134,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   Future<void> _completeSetup({bool accepted = true}) async {
     final lang = _langs.isNotEmpty ? _langs.first : 'Mooré';
-    final dialect = _dialect.isNotEmpty ? _dialect : 'Yatenga';
-    final region = _region.isNotEmpty ? _region : 'Nord';
+    final dialect = _dialect.isNotEmpty ? _dialect : 'Yaadga';
+    final region = _region.isNotEmpty ? _region : 'Yaadga';
     await DialectPrefs.save(
       langs:           _langs.toList(),
       lang:            lang,

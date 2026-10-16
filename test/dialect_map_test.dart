@@ -32,9 +32,9 @@ Future<void> _pump(WidgetTester tester, List<Map<String, dynamic>> coverage) asy
 }
 
 const _coverage = [
-  {'region': 'Ouagadougou', 'zone': 'Centre', 'clips': 800, 'coveragePct': 0.8},
-  {'region': 'Yatenga', 'zone': 'Nord', 'clips': 5, 'coveragePct': 0.005},
-  {'region': 'Dori', 'zone': 'Sahel', 'clips': 120, 'coveragePct': 0.12},
+  {'region': 'Ouagadougou', 'zone': 'Kadiogo', 'clips': 800, 'coveragePct': 0.8},
+  {'region': 'Ouahigouya', 'zone': 'Yaadga', 'clips': 5, 'coveragePct': 0.005},
+  {'region': 'Dori', 'zone': 'Liptako', 'clips': 120, 'coveragePct': 0.12},
 ];
 
 void main() {
@@ -45,19 +45,18 @@ void main() {
 
   testWidgets('liste de couverture rendue depuis l\'API', (tester) async {
     await _pump(tester, _coverage);
-    expect(find.text('Ouagadougou (Centre)'), findsOneWidget);
-    expect(find.text('Dori (Sahel)'), findsOneWidget);
+    expect(find.text('Ouagadougou (Kadiogo)'), findsOneWidget);
+    expect(find.text('Dori (Liptako)'), findsOneWidget);
     expect(find.text('800'), findsOneWidget);
   });
 
   testWidgets('carte détail = zone la plus sous-représentée, badges dérivés', (tester) async {
     await _pump(tester, _coverage);
-    // Yatenga (0,5 %) est la plus rare → détail + Urgent + ×3 pts.
-    expect(find.text('Yatenga'), findsWidgets);
-    expect(find.text('Zone Nord · Burkina Faso'), findsOneWidget);
+    // Ouahigouya (0,5 %) est la plus rare → détail + Urgent + ×3 pts.
+    expect(find.text('Ouahigouya'), findsWidgets);
+    expect(find.text('Zone Yaadga · Burkina Faso'), findsOneWidget);
     expect(find.text('Urgent'), findsOneWidget);
     expect(find.text('×3 pts'), findsOneWidget);
-    // La maquette statique a disparu.
     expect(find.text('Mooré de Yatenga'), findsNothing);
     expect(find.text('B2B'), findsNothing);
   });
@@ -74,7 +73,7 @@ void main() {
     await _pump(tester, _coverage);
     expect(find.text('Vous'), findsNothing); // pas de région en prefs
 
-    await DialectPrefs.save(region: 'Yatenga');
+    await DialectPrefs.save(region: 'Ouahigouya');
     await _pump(tester, _coverage);
     expect(find.text('Vous'), findsOneWidget);
   });

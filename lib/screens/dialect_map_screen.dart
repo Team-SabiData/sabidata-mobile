@@ -9,15 +9,25 @@ import '../data/prefs/dialect_prefs.dart';
 
 /// Coordonnées des régions backend dans l'espace 350×218 du painter.
 /// Une région absente de cette table n'apparaît pas sur la carte (pas d'erreur).
+/// Chef-lieux des 17 régions (toponymes BF 2025) — espace painter 350×218.
 const Map<String, Offset> _regionCoords = {
-  'Ouagadougou':    Offset(174, 128),
-  'Koudougou':      Offset(112, 130),
-  'Ouahigouya':     Offset(118, 55),
-  'Yatenga':        Offset(140, 62),
-  'Bobo-Dioulasso': Offset(66, 158),
-  'Dédougou':       Offset(85, 105),
-  'Dori':           Offset(248, 74),
-  "Fada N'Gourma":  Offset(268, 142),
+  'Ouagadougou':    Offset(174, 128), // Kadiogo
+  'Koudougou':      Offset(112, 130), // Nando
+  'Ouahigouya':     Offset(118, 55),  // Yaadga
+  'Bobo-Dioulasso': Offset(66, 158),  // Guiriko
+  'Dédougou':       Offset(85, 105),  // Bankui
+  'Tougan':         Offset(70, 90),   // Sourou
+  'Dori':           Offset(248, 74),  // Liptako
+  'Djibo':          Offset(200, 48),  // Soum
+  "Fada N'Gourma":  Offset(268, 142), // Goulmou
+  'Bogandé':        Offset(250, 110), // Sirba
+  'Diapaga':        Offset(300, 150), // Tapoa
+  'Gaoua':          Offset(90, 190),  // Djôrô
+  'Banfora':        Offset(50, 175),  // Tannounyan
+  'Kaya':           Offset(190, 90),  // Kuilsé
+  'Tenkodogo':      Offset(220, 155), // Nakambé
+  'Manga':          Offset(175, 160), // Nazinon
+  'Ziniaré':        Offset(185, 115), // Oubri
 };
 
 /// Échelle de couleur commune carte + liste : jaune < 10 %, orange < 30 %.

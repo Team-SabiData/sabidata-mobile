@@ -275,8 +275,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Expanded(
                         child: Builder(builder: (_) {
                           final lang    = DialectPrefs.lang    ?? 'Mooré';
-                          final dialect = DialectPrefs.dialect ?? 'Yatenga';
-                          final region  = DialectPrefs.region  ?? 'Nord';
+                          final dialect = DialectPrefs.dialect ?? 'Yaadga';
+                          final region  = DialectPrefs.region  ?? 'Yaadga';
                           return RichText(
                             text: TextSpan(
                               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
