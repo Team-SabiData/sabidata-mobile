@@ -25,8 +25,19 @@ class RecordingReviewScreen extends StatefulWidget {
   final String? duration;
   final bool commercialUse;
   final String? audioPath;
+  final String? promptText;
+  final String? promptId;
+  final String? language;
 
-  const RecordingReviewScreen({super.key, this.duration, this.commercialUse = true, this.audioPath});
+  const RecordingReviewScreen({
+    super.key,
+    this.duration,
+    this.commercialUse = true,
+    this.audioPath,
+    this.promptText,
+    this.promptId,
+    this.language,
+  });
 
   @override
   State<RecordingReviewScreen> createState() => _RecordingReviewScreenState();
@@ -104,6 +115,7 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
         commercialUse: widget.commercialUse,
         consentVersion: 'v1',
         audioPath: path,
+        promptId: widget.promptId,
         language: DialectPrefs.primaryLang,
         dialect: DialectPrefs.dialect,
         region: DialectPrefs.region,
@@ -125,6 +137,7 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
           language: DialectPrefs.primaryLang,
           dialect: DialectPrefs.dialect,
           region: DialectPrefs.region,
+          promptId: widget.promptId,
         );
         await LocalStats().recordSubmission();
         if (mounted) {
@@ -184,19 +197,23 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
                     const Text('Vérifiez que votre voix est claire et correspond à la phrase.',
                       style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
                     const SizedBox(height: 18),
-                    // Phrase card
+                    // Phrase card (même prompt que l'enregistrement)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppRadius.card)),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Phrase enregistrée · Mooré',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.08 * 11)),
-                          SizedBox(height: 10),
-                          Text('"Le marché se tient chaque dimanche matin."',
-                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.4)),
+                          Text(
+                            'Phrase enregistrée · ${widget.language ?? DialectPrefs.primaryLang}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.08 * 11),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            '"${widget.promptText ?? 'Phrase non disponible'}"',
+                            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.4),
+                          ),
                         ],
                       ),
                     ),

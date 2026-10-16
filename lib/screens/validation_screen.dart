@@ -195,20 +195,25 @@ class _ValidationScreenState extends State<ValidationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Phrase source (français)',
+                  Text('Phrase à juger',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.08 * 11)),
                   const SizedBox(height: 8),
-                  const Text('"La saison des pluies commence en mai."',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.4)),
+                  Text(
+                    '"${_clip?['promptText'] ?? 'Phrase non fournie — jugez la qualité audio'}"',
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.4),
+                  ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Row(
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.translate_rounded, size: 15, color: AppColors.green),
-                          SizedBox(width: 4),
-                          Text('Mooré', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.green)),
+                          const Icon(Icons.translate_rounded, size: 15, color: AppColors.green),
+                          const SizedBox(width: 4),
+                          Text(
+                            (_clip?['language'] ?? _clip?['dialect'] ?? '—').toString(),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.green),
+                          ),
                         ],
                       ),
                       const SizedBox(width: 8),

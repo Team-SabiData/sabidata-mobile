@@ -144,6 +144,9 @@ final GoRouter appRouter = GoRouter(
         duration:     e?['duration']    as String?,
         commercialUse: e?['commercial'] as bool?   ?? true,
         audioPath:    e?['audio_path']  as String?,
+        promptText:   e?['prompt_text'] as String?,
+        promptId:     e?['prompt_id']   as String?,
+        language:     e?['language']    as String?,
       ));
     }),
     GoRoute(path: '/validation',    pageBuilder: (c, s) => _page(s, const ValidationScreen())),

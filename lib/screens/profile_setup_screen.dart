@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
 import '../data/api/auth_api.dart';
+import '../data/api/referential_api.dart';
 import '../data/prefs/dialect_prefs.dart';
 import '../widgets/app_feedback.dart';
 import '../widgets/progress_bar.dart';
@@ -19,39 +20,116 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   // Étapes : 0 = langue, 1 = dialecte, 2 = politique
   int _step = 0;
 
-  // Étape 1 — Langues
+  // Étape 1 — Langues (nameFr affiché ; code API pour dialectes)
   final Set<String> _langs = {};
+  final Map<String, String> _langCodes = {}; // nameFr → code
 
   // Étape 2 — Dialecte
   String _dialect = '';
   String _region  = '';
   int    _rare    = 0;
 
-  static const _languages = [
-    {'name': 'Mooré',      'sub': 'Plateau Central · ~5M locuteurs', 'color': Color(0xFFE11D28), 'icon': Icons.terrain_rounded},
-    {'name': 'Dioula',     'sub': 'Langue du commerce · Ouest',       'color': Color(0xFF1A9E78), 'icon': Icons.storefront_rounded},
-    {'name': 'Fulfuldé',   'sub': 'Langue peule · Sahel',              'color': Color(0xFF2A5298), 'icon': Icons.pets_rounded},
-    {'name': 'Gulmancema', 'sub': 'Langue du Gulmu · Est',             'color': Color(0xFF7B2D8B), 'icon': Icons.landscape_rounded},
+  List<Map<String, Object>> _languages = [];
+  List<Map<String, Object>> _dialectOptions = [];
+  bool _loadingRef = true;
+
+  static const _fallbackLanguages = [
+    {'name': 'Mooré',      'code': 'moore',    'sub': 'Plateau Central', 'color': Color(0xFFE11D28), 'icon': Icons.terrain_rounded},
+    {'name': 'Dioula',     'code': 'dioula',   'sub': 'Ouest',           'color': Color(0xFF1A9E78), 'icon': Icons.storefront_rounded},
+    {'name': 'Fulfuldé',   'code': 'fulfulde', 'sub': 'Sahel',           'color': Color(0xFF2A5298), 'icon': Icons.pets_rounded},
   ];
 
-  static const _regions = [
-    {'name': 'Ouagadougou', 'zone': 'Centre',           'clips': 4230, 'pct': 0.88, 'rare': 0, 'lang': 'Mooré'},
-    {'name': 'Koudougou',   'zone': 'Plateau Central',  'clips': 1840, 'pct': 0.42, 'rare': 0, 'lang': 'Mooré'},
-    {'name': 'Ouahigouya',  'zone': 'Nord',              'clips': 620,  'pct': 0.15, 'rare': 1, 'lang': 'Mooré'},
-    {'name': 'Yatenga',     'zone': 'Nord',              'clips': 180,  'pct': 0.05, 'rare': 2, 'lang': 'Mooré'},
-    {'name': 'Bobo-Dioulasso', 'zone': 'Hauts-Bassins', 'clips': 980,  'pct': 0.24, 'rare': 0, 'lang': 'Dioula'},
-    {'name': 'Dédougou',    'zone': 'Boucle du Mouhoun','clips': 340,  'pct': 0.09, 'rare': 1, 'lang': 'Dioula'},
-    {'name': 'Dori',        'zone': 'Sahel',             'clips': 120,  'pct': 0.03, 'rare': 2, 'lang': 'Fulfuldé'},
-    {'name': 'Fada N\'Gourma','zone': 'Est',             'clips': 290,  'pct': 0.08, 'rare': 1, 'lang': 'Gulmancema'},
+  static const _fallbackRegions = [
+    {'name': 'Nord', 'zone': 'Nord', 'clips': 0, 'pct': 0.0, 'rare': 1, 'lang': 'Mooré'},
+    {'name': 'Centre', 'zone': 'Centre', 'clips': 0, 'pct': 0.0, 'rare': 0, 'lang': 'Mooré'},
+    {'name': 'Hauts-Bassins', 'zone': 'Hauts-Bassins', 'clips': 0, 'pct': 0.0, 'rare': 0, 'lang': 'Dioula'},
+    {'name': 'Sahel', 'zone': 'Sahel', 'clips': 0, 'pct': 0.0, 'rare': 2, 'lang': 'Fulfuldé'},
   ];
 
-  // Regions filtrées selon la langue principale
-  List<Map<String, Object>> get _filteredRegions {
-    if (_langs.isEmpty) return List<Map<String, Object>>.from(_regions);
-    final primary = _langs.first;
-    final filtered = _regions.where((r) => r['lang'] == primary).toList();
-    return List<Map<String, Object>>.from(filtered.isNotEmpty ? filtered : _regions);
+  @override
+  void initState() {
+    super.initState();
+    _loadReferential();
   }
+
+  Future<void> _loadReferential() async {
+    try {
+      final api = ReferentialApi();
+      final langs = await api.languages();
+      if (!mounted) return;
+      if (langs.isNotEmpty) {
+        const colors = [Color(0xFFE11D28), Color(0xFF1A9E78), Color(0xFF2A5298), Color(0xFF7B2D8B)];
+        const icons = [Icons.terrain_rounded, Icons.storefront_rounded, Icons.pets_rounded, Icons.landscape_rounded];
+        final mapped = <Map<String, Object>>[];
+        for (var i = 0; i < langs.length; i++) {
+          final l = langs[i];
+          final name = (l['nameFr'] ?? l['code'] ?? '').toString();
+          final code = (l['code'] ?? '').toString();
+          _langCodes[name] = code;
+          mapped.add({
+            'name': name,
+            'code': code,
+            'sub': (l['isoBcp47'] ?? code).toString(),
+            'color': colors[i % colors.length],
+            'icon': icons[i % icons.length],
+          });
+        }
+        setState(() {
+          _languages = mapped;
+          _loadingRef = false;
+        });
+        return;
+      }
+    } catch (_) {/* fallback */}
+    if (!mounted) return;
+    setState(() {
+      _languages = List<Map<String, Object>>.from(_fallbackLanguages);
+      for (final l in _languages) {
+        _langCodes[l['name'] as String] = l['code'] as String;
+      }
+      _loadingRef = false;
+    });
+  }
+
+  Future<void> _loadDialectsForPrimary() async {
+    if (_langs.isEmpty) {
+      setState(() => _dialectOptions = List<Map<String, Object>>.from(_fallbackRegions));
+      return;
+    }
+    final primary = _langs.first;
+    final code = _langCodes[primary];
+    try {
+      final list = await ReferentialApi().dialects(lang: code);
+      if (!mounted) return;
+      if (list.isNotEmpty) {
+        setState(() {
+          _dialectOptions = list.map((d) {
+            final hours = (d['targetHours'] as num?)?.toDouble() ?? 0;
+            final rare = hours >= 50 ? 0 : hours >= 30 ? 1 : 2;
+            return <String, Object>{
+              'name': (d['nameFr'] ?? d['code'] ?? '').toString(),
+              'zone': (d['zone'] ?? d['nameFr'] ?? '').toString(),
+              'clips': 0,
+              'pct': 0.0,
+              'rare': rare,
+              'lang': primary,
+            };
+          }).toList();
+        });
+        return;
+      }
+    } catch (_) {/* fallback */}
+    if (!mounted) return;
+    final filtered = _fallbackRegions.where((r) => r['lang'] == primary).toList();
+    setState(() {
+      _dialectOptions = List<Map<String, Object>>.from(
+        filtered.isNotEmpty ? filtered : _fallbackRegions,
+      );
+    });
+  }
+
+  List<Map<String, Object>> get _filteredRegions =>
+      _dialectOptions.isNotEmpty ? _dialectOptions : List<Map<String, Object>>.from(_fallbackRegions);
 
   Future<void> _completeSetup({bool accepted = true}) async {
     final lang = _langs.isNotEmpty ? _langs.first : 'Mooré';
@@ -171,6 +249,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   // ── Étape 1 : Langue ────────────────────────────────────────────────────
 
   Widget _buildLangStep() {
+    if (_loadingRef) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: _languages.length,
@@ -427,7 +508,22 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       child: GestureDetector(
-        onTap: canNext ? () => setState(() => _step++) : null,
+        onTap: canNext
+            ? () async {
+                if (_step == 0) {
+                  await _loadDialectsForPrimary();
+                  if (!mounted) return;
+                  setState(() {
+                    _dialect = '';
+                    _region = '';
+                    _rare = 0;
+                    _step++;
+                  });
+                } else {
+                  setState(() => _step++);
+                }
+              }
+            : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: double.infinity, height: 54,

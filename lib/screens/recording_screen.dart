@@ -35,6 +35,7 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
 
   // Phrase dynamique chargée depuis l'API
   String _promptText = 'Chargement…';
+  String? _promptId;
   bool   _loadingPrompt = true;
 
   final _api = ApiClient();
@@ -55,6 +56,7 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
       if (mounted) {
         setState(() {
           _promptText    = p['text']?.toString() ?? 'Enregistrez cette phrase.';
+          _promptId      = p['id']?.toString();
           _loadingPrompt = false;
         });
       }
@@ -256,6 +258,9 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
                         'duration': _time,
                         'commercial': widget.commercialUse,
                         'consent_version': widget.consentVersion,
+                        'prompt_text': _promptText,
+                        'prompt_id': _promptId,
+                        'language': DialectPrefs.primaryLang,
                       });
                     },
                     child: AnimatedBuilder(

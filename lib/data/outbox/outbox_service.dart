@@ -19,6 +19,7 @@ class OutboxItem {
   final String? language;
   final String? dialect;
   final String? region;
+  final String? promptId;
 
   OutboxItem({
     required this.id,
@@ -30,12 +31,14 @@ class OutboxItem {
     this.language,
     this.dialect,
     this.region,
+    this.promptId,
   });
 
   Map<String, dynamic> toJson() => {
         'id': id, 'audioPath': audioPath, 'rarity': rarity, 'durationS': durationS,
         'commercialUse': commercialUse, 'consentVersion': consentVersion,
         'language': language, 'dialect': dialect, 'region': region,
+        'promptId': promptId,
       };
 
   factory OutboxItem.fromJson(Map<String, dynamic> j) => OutboxItem(
@@ -48,6 +51,7 @@ class OutboxItem {
         language: j['language']?.toString(),
         dialect: j['dialect']?.toString(),
         region: j['region']?.toString(),
+        promptId: j['promptId']?.toString(),
       );
 }
 
@@ -107,6 +111,7 @@ class OutboxService {
     String? language,
     String? dialect,
     String? region,
+    String? promptId,
   }) async {
     final dir = await getApplicationDocumentsDirectory();
     final outDir = Directory('${dir.path}/outbox');
@@ -127,6 +132,7 @@ class OutboxService {
       language: language,
       dialect: dialect,
       region: region,
+      promptId: promptId,
     ));
     await _save(items);
   }
@@ -148,6 +154,7 @@ class OutboxService {
             language: item.language,
             dialect: item.dialect,
             region: item.region,
+            promptId: item.promptId,
           );
           await _remove(item);
         } on ApiException catch (e) {
