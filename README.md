@@ -9,8 +9,8 @@ Application mobile de collecte crowdsourcée de données audio en langues nation
 flutter run
 
 # Prod / staging Railway
-flutter run --dart-define=API_BASE_URL=https://YOUR_RAILWAY_HOST
-flutter build apk --dart-define=API_BASE_URL=https://YOUR_RAILWAY_HOST
+flutter run --dart-define=API_BASE_URL=https://sabidata-api-production.up.railway.app
+flutter build apk --dart-define=API_BASE_URL=https://sabidata-api-production.up.railway.app
 ```
 
 ---
