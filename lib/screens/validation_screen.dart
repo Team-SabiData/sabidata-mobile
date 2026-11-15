@@ -16,6 +16,7 @@ import '../widgets/state_views.dart';
 import '../data/api/api_client.dart';
 import '../data/api/validation_api.dart';
 import '../data/api/api_exception.dart';
+import '../data/api/auth_api.dart';
 import '../data/gamification/local_stats.dart';
 
 class ValidationScreen extends StatefulWidget {
@@ -124,6 +125,7 @@ class _ValidationScreenState extends State<ValidationScreen> {
     if (clip == null) return;
     try {
       await _api.submitVerdict(clip['clipId'] as String, verdict);
+      if (verdict == 'correct') await AuthApi().refreshMe().catchError((_) {});
       await LocalStats().recordValidation();
       await _loadToday();
       if (verdict == 'correct' && mounted) {

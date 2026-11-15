@@ -44,7 +44,20 @@ class AuthApi {
   /// Recharge le profil courant (points/niveau à jour) depuis GET /api/me.
   Future<void> refreshMe() async {
     final data = await _client.get('/api/me');
-    AuthSession.instance.setProfile(Map<String, dynamic>.from(data as Map));
+    final map = Map<String, dynamic>.from(data as Map);
+    final language = map['language']?.toString();
+    final dialect = map['dialect']?.toString();
+    final region = map['region']?.toString();
+    // Après reconnexion, le cache local est vide : on le remplit avec le profil serveur.
+    if (language != null && language.isNotEmpty && DialectPrefs.langs.isEmpty) {
+      await DialectPrefs.save(
+        lang: language,
+        dialect: dialect,
+        region: region,
+        langs: [language],
+      );
+    }
+    AuthSession.instance.setProfile(map);
   }
 
   /// Enregistre le profil linguistique côté serveur puis rafraîchit /me.

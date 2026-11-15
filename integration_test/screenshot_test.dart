@@ -184,9 +184,7 @@ void main() {
     // ── Revenus & extras ───────────────────────────────────────────────
     await goto(tester, '17_revenue', '/revenue');
     await goto(tester, '18_withdraw', '/withdraw', extra: 'orange');
-    await goto(tester, '19_expert', '/expert');
     await goto(tester, '20_conversion', '/conversion');
-    await goto(tester, '21_classroom', '/classroom');
 
     debugPrint('SHOTS_DIR=${_shotDir.path}');
     // Compte les fichiers écrits.

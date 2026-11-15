@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SecondaryButton(
                       label: 'Continuer avec mon numéro',
                       icon: Icons.phone_iphone_rounded,
-                      onTap: () => context.go('/phone-login'),
+                      onTap: () => context.push('/phone-login'),
                     ),
                   ],
                 ),
@@ -149,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text('Pas encore de compte ?',
                         style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                       SpringTap(
-                        onTap: () => context.go('/register'),
+                        onTap: () => context.push('/register'),
                         child: const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                           child: Text('S\'inscrire',

@@ -14,10 +14,7 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  int _tab = 0;
-  static const _tabs = ['Ma commune', 'Région', 'National'];
-
-  // Données chargées depuis l'API
+  // Données chargées depuis l'API (classement national)
   List<Map<String, dynamic>> _top10 = [];
   Map<String, dynamic>? _me;
   bool _loading = true;
@@ -73,52 +70,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               title: 'Classement',
               subtitle: 'Mis à jour ce matin',
               height: 150,
-              onBack: () => context.go('/dashboard'),
+              onBack: () => context.canPop() ? context.pop() : context.go('/dashboard'),
             ),
             const SizedBox(height: 16),
-            // Tabs
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  children: List.generate(_tabs.length, (i) {
-                    final active = _tab == i;
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _tab = i),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: active ? AppColors.surfaceElevated : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            _tabs[i],
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                              color: active ? AppColors.primary : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Contenu principal
             if (_loading)
               const Expanded(child: Center(child: CircularProgressIndicator(color: AppColors.primary)))
-            else if (_tab == 2) ...[
+            else ...[
               // Podium — top 3
               if (_top10.length >= 3)
                 Padding(
@@ -170,16 +127,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
                 ),
               ),
-            ] else
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Commune et région\ndisponibles bientôt',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                  ),
-                ),
-              ),
+            ],
             // Carte épingлée — position de l'utilisateur courant
             if (_me != null)
               Container(

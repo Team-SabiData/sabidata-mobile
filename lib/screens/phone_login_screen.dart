@@ -44,7 +44,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       await AuthApi().requestOtp(phone);
       if (!mounted) return;
       showAppSnack(context, 'Code envoyé par SMS au $phone');
-      context.go('/verify', extra: phone);
+      context.push('/verify', extra: phone);
     } on ApiException catch (e) {
       if (mounted) showAppSnack(context, e.message);
     }

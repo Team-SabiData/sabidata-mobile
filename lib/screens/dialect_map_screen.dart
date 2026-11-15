@@ -109,7 +109,7 @@ class _DialectMapScreenState extends State<DialectMapScreen> {
               subtitle: 'Distribution des enregistrements par zone',
               height: 150,
               scrim: const Color(0xFF07223B),
-              onBack: () => context.go('/dashboard'),
+              onBack: () => context.canPop() ? context.pop() : context.go('/dashboard'),
             ),
             const SizedBox(height: 16),
             // Map

@@ -12,7 +12,7 @@ class AppPreviewScreen extends StatelessWidget {
   // Ouvre le bottom sheet d'auth si l'utilisateur n'est pas connecté.
   static void _requireAuth(BuildContext context, String destination) {
     if (AuthSession.instance.isAuthenticated) {
-      context.go(destination);
+      context.push(destination);
       return;
     }
     _showAuthSheet(context, destination);
@@ -168,7 +168,7 @@ class AppPreviewScreen extends StatelessWidget {
                   description: 'Voyez qui contribue le plus. Entrez dans le top 10 et remportez des récompenses.',
                   badge: 'Gratuit',
                   badgeColor: AppColors.yellow,
-                  onTap: () => context.go('/leaderboard'),
+                  onTap: () => context.push('/leaderboard'),
                 ),
                 const SizedBox(height: 10),
                 _FeatureCard(
@@ -178,7 +178,7 @@ class AppPreviewScreen extends StatelessWidget {
                   description: 'Explorez la couverture linguistique du Burkina Faso par région.',
                   badge: 'Gratuit',
                   badgeColor: const Color(0xFF7B2D8B),
-                  onTap: () => context.go('/dialect-map'),
+                  onTap: () => context.push('/dialect-map'),
                 ),
                 const SizedBox(height: 24),
 
@@ -198,8 +198,8 @@ class AppPreviewScreen extends StatelessWidget {
 
                 // ── CTA principal ───────────────────────────────────────────
                 _AuthCTA(
-                  onRegister: () => context.go('/register'),
-                  onLogin: () => context.go('/login'),
+                  onRegister: () => context.push('/register'),
+                  onLogin: () => context.push('/login'),
                 ),
               ]),
             ),
@@ -422,7 +422,7 @@ class _AuthBottomSheet extends StatelessWidget {
           GestureDetector(
             onTap: () {
               Navigator.pop(context);
-              context.go('/register');
+              context.push('/register');
             },
             child: Container(
               width: double.infinity, height: 52,
@@ -441,7 +441,7 @@ class _AuthBottomSheet extends StatelessWidget {
           GestureDetector(
             onTap: () {
               Navigator.pop(context);
-              context.go('/login');
+              context.push('/login');
             },
             child: const Text('J\'ai déjà un compte → Se connecter',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),

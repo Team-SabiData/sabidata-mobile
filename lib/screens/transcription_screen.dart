@@ -14,6 +14,7 @@ import '../widgets/state_views.dart';
 import '../data/api/api_client.dart';
 import '../data/api/api_exception.dart';
 import '../data/api/transcription_api.dart';
+import '../data/api/auth_api.dart';
 
 /// Transcrire un clip validé de sa propre langue : écouter l'audio, écrire ce
 /// qui est dit, soumettre. File servie et filtrée par langue/dialecte côté serveur.
@@ -123,6 +124,7 @@ class _TranscriptionScreenState extends State<TranscriptionScreen> {
     setState(() => _submitting = true);
     try {
       final res = await _api.submit(clip['clipId'] as String, text);
+      await AuthApi().refreshMe().catchError((_) {});
       if (mounted) showCelebration(context, points: (res['reward'] as num?)?.toInt() ?? 80);
       await _fetchNext();
     } on ApiException catch (e) {

@@ -78,6 +78,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         setState(() {
           _languages = mapped;
           _loadingRef = false;
+          _prefillFromPrefs();
         });
         return;
       }
@@ -89,7 +90,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         _langCodes[l['name'] as String] = l['code'] as String;
       }
       _loadingRef = false;
+      _prefillFromPrefs();
     });
+  }
+
+  void _prefillFromPrefs() {
+    if (DialectPrefs.langs.isNotEmpty) {
+      _langs
+        ..clear()
+        ..addAll(DialectPrefs.langs);
+    } else if (DialectPrefs.lang != null && DialectPrefs.lang!.isNotEmpty) {
+      _langs
+        ..clear()
+        ..add(DialectPrefs.lang!);
+    }
+    _dialect = DialectPrefs.dialect ?? _dialect;
+    _region = DialectPrefs.region ?? _region;
+    _rare = DialectPrefs.rare;
   }
 
   Future<void> _loadDialectsForPrimary() async {

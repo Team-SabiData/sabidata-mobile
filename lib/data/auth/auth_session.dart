@@ -11,7 +11,8 @@ class UserProfile {
   final int competence;
   final int points;
   final int contributionsValidated;
-  final String level; // 'bronze' | 'argent' | 'or'
+  final String level; // 'bronze' | 'argent' | 'or', autorité serveur
+  final Map<String, dynamic>? levelThresholds;
   final bool profileComplete;
   final bool commercialConsent;
   final String? language;
@@ -26,7 +27,8 @@ class UserProfile {
     required this.competence,
     this.points = 0,
     this.contributionsValidated = 0,
-    this.level = 'bronze',
+    this.level = '',
+    this.levelThresholds,
     this.profileComplete = false,
     this.commercialConsent = false,
     this.language,
@@ -50,7 +52,10 @@ class UserProfile {
     competence:  (j['competence'] as num?)?.toInt() ?? 0,
     points:      (j['points'] as num?)?.toInt() ?? 0,
     contributionsValidated: (j['contributionsValidated'] as num?)?.toInt() ?? 0,
-    level:       j['level']?.toString()       ?? 'bronze',
+    level:       j['level']?.toString()       ?? '',
+    levelThresholds: j['levelThresholds'] is Map
+        ? Map<String, dynamic>.from(j['levelThresholds'] as Map)
+        : null,
     profileComplete:    j['profileComplete'] == true,
     commercialConsent:  j['commercialConsent'] == true,
     language:    j['language']?.toString(),

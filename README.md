@@ -135,8 +135,6 @@ flutter build apk --debug
 - Stockage offline SQLite / Isar + queue de synchronisation
 - Enregistrement audio réel (package `record`)
 - Lecture audio réelle (package `just_audio`)
-- Module Expert / Linguiste (`/expert`)
-- Classroom Challenge B2B (`/classroom`)
 - Data Marketplace (interface web séparée)
 - Localisation i18n (fr / mooré / dioula)
 - Intégration CinetPay / FedaPay pour les paiements mobile money

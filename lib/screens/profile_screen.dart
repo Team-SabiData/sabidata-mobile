@@ -8,6 +8,7 @@ import '../data/auth/auth_session.dart';
 import '../data/api/auth_api.dart';
 import '../data/api/wallet_api.dart';
 import '../data/gamification/level.dart';
+import '../data/prefs/dialect_prefs.dart';
 
 /// Profil & réglages. Point d'entrée depuis l'en-tête du dashboard.
 /// Complète la boucle d'auth (déconnexion) et regroupe les réglages
@@ -72,9 +73,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       builder: (_, profile, _) {
                         final name = profile?.name ?? 'Contributeur';
                         final contact = profile?.phone ?? profile?.email ?? '';
-                        final level = profile?.level ?? 'bronze';
-                        final lvl = LevelInfo.of(level, profile?.contributionsValidated ?? 0);
-                        final levelName = '${level[0].toUpperCase()}${level.substring(1)}';
+                        final lvl = LevelInfo.of(profile?.level ?? '', profile?.points ?? 0,
+                            thresholds: profile?.levelThresholds);
+                        final levelName = lvl.key[0].toUpperCase() + lvl.key.substring(1);
                         return Container(
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
@@ -157,14 +158,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ValueListenableBuilder<UserProfile?>(
                       valueListenable: AuthSession.instance.user,
                       builder: (_, profile, _) {
-                        final parts = [profile?.language, profile?.dialect, profile?.region]
-                            .where((s) => s != null && s.isNotEmpty)
-                            .cast<String>()
-                            .toList();
-                        final value = parts.isEmpty ? 'Non défini' : parts.take(2).join(' · ');
-                        return _SettingRow(
-                          icon: Icons.translate_rounded, label: 'Langue & région', value: value,
-                          onTap: () => context.go('/profile-setup'),
+                        final langs = DialectPrefs.langs.isNotEmpty
+                            ? DialectPrefs.langs
+                            : [
+                                if ((profile?.language ?? '').isNotEmpty) profile!.language!,
+                              ];
+                        final dialect = DialectPrefs.dialect ?? profile?.dialect;
+                        final region = DialectPrefs.region ?? profile?.region;
+                        final consent = profile?.commercialConsent == true || DialectPrefs.consentAccepted;
+                        return Column(
+                          children: [
+                            _InfoRow(
+                              icon: Icons.person_rounded,
+                              label: 'Nom',
+                              value: (profile?.name ?? '').isEmpty ? 'Non défini' : profile!.name,
+                            ),
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.mail_outline_rounded,
+                              label: 'Email',
+                              value: (profile?.email ?? '').isEmpty ? 'Non défini' : profile!.email!,
+                            ),
+                            if ((profile?.phone ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              _InfoRow(
+                                icon: Icons.phone_iphone_rounded,
+                                label: 'Téléphone',
+                                value: profile!.phone!,
+                              ),
+                            ],
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.translate_rounded,
+                              label: 'Langues',
+                              value: langs.isEmpty ? 'Non défini' : langs.join(', '),
+                            ),
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.record_voice_over_rounded,
+                              label: 'Dialecte',
+                              value: (dialect ?? '').isEmpty ? 'Non défini' : dialect!,
+                            ),
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.place_rounded,
+                              label: 'Région',
+                              value: (region ?? '').isEmpty ? 'Non défini' : region!,
+                            ),
+                            const SizedBox(height: 8),
+                            _InfoRow(
+                              icon: Icons.gavel_rounded,
+                              label: 'Consentement',
+                              value: consent ? 'Usage commercial accepté' : 'Non accepté',
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -243,6 +290,40 @@ class _StatTile extends StatelessWidget {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
           const SizedBox(height: 2),
           Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(14)),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.primary),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(label,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(value,
+              textAlign: TextAlign.right,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          ),
         ],
       ),
     );

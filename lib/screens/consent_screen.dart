@@ -143,7 +143,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                 child: PrimaryButton(
                   label: 'Accepter et enregistrer →',
                   enabled: _accepted,
-                  onTap: () => context.go('/recording', extra: {
+                  onTap: () => context.push('/recording', extra: {
                     'commercial': _commercial,
                     'consent_version': _consentVersion,
                   }),

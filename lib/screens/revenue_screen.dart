@@ -8,6 +8,7 @@ import '../widgets/app_card.dart';
 import '../data/api/wallet_api.dart';
 import '../data/api/ledger_api.dart';
 import '../data/gamification/level.dart';
+import '../data/auth/auth_session.dart';
 
 class RevenueScreen extends StatefulWidget {
   const RevenueScreen({super.key});
@@ -103,9 +104,14 @@ class _RevenueScreenState extends State<RevenueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locked = (_wallet?['level'] as String?) == 'bronze';
-    final count = (_wallet?['contributionsValidated'] as int?) ?? 0;
-    final remaining = (LevelInfo.argentAt - count).clamp(0, LevelInfo.argentAt);
+    final level = (_wallet?['level'] as String?) ?? AuthSession.instance.user.value?.level ?? '';
+    final points = (_wallet?['pointsTotal'] as num?)?.toInt()
+        ?? AuthSession.instance.user.value?.points ?? 0;
+    final thresholds = (_wallet?['levelThresholds'] as Map?)?.cast<String, dynamic>()
+        ?? AuthSession.instance.user.value?.levelThresholds;
+    final progression = LevelInfo.of(level, points, thresholds: thresholds);
+    final locked = progression.key == 'bronze';
+    final remaining = progression.pointsRemaining(points);
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: AppBody(
@@ -117,7 +123,7 @@ class _RevenueScreenState extends State<RevenueScreen> {
               subtitle: _monthLabel,
               height: 150,
               scrim: const Color(0xFF241608),
-              onBack: () => context.go('/dashboard'),
+              onBack: () => context.canPop() ? context.pop() : context.go('/dashboard'),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -204,7 +210,7 @@ class _RevenueScreenState extends State<RevenueScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Retrait débloqué au niveau Argent — encore $remaining contributions validées.',
+                                'Retrait débloqué au niveau Argent — encore $remaining pts à gagner.',
                                 style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                               ),
                             ),
@@ -218,7 +224,7 @@ class _RevenueScreenState extends State<RevenueScreen> {
                       label: 'Retirer → $_selectedProvider',
                       color: AppColors.green,
                       enabled: !locked,
-                      onTap: () => context.go('/withdraw', extra: _selectedProvider),
+                      onTap: () => context.push('/withdraw', extra: _selectedProvider),
                     ),
                     const SizedBox(height: 8),
                     const Text('Minimum 500 FCFA · Paiement dans 24h',

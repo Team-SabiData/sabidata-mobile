@@ -14,6 +14,7 @@ import '../widgets/spring_tap.dart';
 import '../widgets/state_views.dart';
 import '../data/api/contribution_api.dart';
 import '../data/api/api_exception.dart';
+import '../data/api/auth_api.dart';
 import '../data/gamification/local_stats.dart';
 import '../data/prefs/dialect_prefs.dart';
 import '../data/outbox/outbox_service.dart';
@@ -123,6 +124,8 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
       if (mounted) setState(() => _result = res);
       if (mounted && res['status'] != 'rejected') {
         await LocalStats().recordSubmission();
+        // Les points et le passage de niveau restent validés par le serveur.
+        await AuthApi().refreshMe().catchError((_) {});
         if (mounted) showCelebration(context, points: (res['reward'] as num?)?.toInt() ?? 150);
       }
     } on ApiException catch (e) {
@@ -168,7 +171,16 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
                 ? 'La vérification automatique a échoué (durée hors limites). Réessayez avec un clip plus long.'
                 : 'Merci pour votre contribution. +$reward points · il passe en validation par la communauté.',
             actionLabel: rejected ? 'Réessayer' : 'Continuer',
-            onAction: () => context.go(rejected ? '/recording' : '/dashboard'),
+            onAction: () {
+              if (rejected) {
+                context.pushReplacement('/recording', extra: {
+                  'commercial': widget.commercialUse,
+                  'consent_version': 'v1',
+                });
+              } else {
+                context.go('/dashboard');
+              }
+            },
           ),
         ),
       );
@@ -183,7 +195,7 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
               motif: 'assets/motifs/motif_voix.png',
               title: 'Vérifier',
               height: 128,
-              onBack: () => context.go('/recording'),
+              onBack: () => context.canPop() ? context.pop() : context.go('/dashboard'),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -302,7 +314,7 @@ class _RecordingReviewScreenState extends State<RecordingReviewScreen> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => context.go('/recording', extra: {
+                      onTap: () => context.pushReplacement('/recording', extra: {
                         'commercial': widget.commercialUse,
                         'consent_version': 'v1',
                       }),

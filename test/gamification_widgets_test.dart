@@ -2,8 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sabidata_app/widgets/progress_ring.dart';
 import 'package:sabidata_app/widgets/streak_badge.dart';
+import 'package:sabidata_app/data/gamification/level.dart';
 
 void main() {
+  test('la progression de niveau suit les points et accepte les seuils API', () {
+    final bronze = LevelInfo.of('', 250);
+    expect(bronze.key, 'bronze');
+    expect(bronze.progress, 0.5);
+    expect(bronze.pointsRemaining(250), 250);
+
+    final argent = LevelInfo.of('argent', 1250);
+    expect(argent.key, 'argent');
+    expect(argent.progress, 0.5);
+    expect(argent.pointsRemaining(1250), 750);
+
+    final serverConfigured = LevelInfo.of('', 300,
+        thresholds: {'argent': 300, 'or': 900});
+    expect(serverConfigured.key, 'argent');
+    expect(serverConfigured.progress, 0);
+  });
+
   testWidgets('ProgressRing accepte des valeurs hors bornes', (tester) async {
     await tester.pumpWidget(const MaterialApp(
       home: Scaffold(body: ProgressRing(value: 1.7, center: Text('2450'))),

@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SecondaryButton(
                       label: 'S\'inscrire avec un numéro',
                       icon: Icons.phone_iphone_rounded,
-                      onTap: () => context.go('/phone-login'),
+                      onTap: () => context.push('/phone-login'),
                     ),
                   ],
                 ),
@@ -153,7 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Text('Déjà un compte ?',
                         style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                       SpringTap(
-                        onTap: () => context.go('/login'),
+                        onTap: () => context.canPop() ? context.pop() : context.go('/login'),
                         child: const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                           child: Text('Se connecter',

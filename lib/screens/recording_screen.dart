@@ -30,7 +30,8 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
   final List<double> _levels = List.filled(24, 0.05, growable: false);
   StreamSubscription<Amplitude>? _ampSub;
   String? _audioPath;
-  bool _isRecording = true;
+  bool _isRecording = false;
+  bool _starting = false;
   int _seconds = 0;
 
   // Phrase dynamique chargée depuis l'API
@@ -43,8 +44,7 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat();
-    _startRecording();
+    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
     _fetchPrompt();
   }
 
@@ -65,7 +65,10 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
     }
   }
 
-  Future<void> _startRecording() async {
+  Future<void> _beginRecording() async {
+    if (_isRecording || _starting || _loadingPrompt) return;
+    setState(() => _starting = true);
+
     // Vérifier si la permission a déjà été accordée (mémorisée)
     final prefs = await SharedPreferences.getInstance();
     final alreadyGranted = prefs.getBool('mic_granted') ?? false;
@@ -75,14 +78,20 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
       if (status.isGranted) {
         await prefs.setBool('mic_granted', true);
       } else {
-        if (mounted) showAppSnack(context, 'Autorisation micro refusée.');
+        if (mounted) {
+          setState(() => _starting = false);
+          showAppSnack(context, 'Autorisation micro refusée.');
+        }
         return;
       }
     } else if (!await _recorder.hasPermission()) {
       // Précaution : la permission système a pu être révoquée manuellement
       final status = await Permission.microphone.request();
       if (!status.isGranted) {
-        if (mounted) showAppSnack(context, 'Autorisation micro requise.');
+        if (mounted) {
+          setState(() => _starting = false);
+          showAppSnack(context, 'Autorisation micro requise.');
+        }
         return;
       }
     }
@@ -90,6 +99,13 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
     final path = '${dir.path}/clip_${DateTime.now().millisecondsSinceEpoch}.m4a';
     await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
     _audioPath = path;
+    if (!mounted) return;
+    setState(() {
+      _starting = false;
+      _isRecording = true;
+      _seconds = 0;
+    });
+    _pulseController.repeat();
     _startTimer();
     _ampSub = _recorder
         .onAmplitudeChanged(const Duration(milliseconds: 120))
@@ -104,6 +120,40 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
         _levels[_levels.length - 1] = (v + _levels[_levels.length - 2]) / 2;
       });
     });
+  }
+
+  Future<void> _stopAndReview() async {
+    if (!_isRecording) return;
+    setState(() => _isRecording = false);
+    _pulseController.stop();
+    await _ampSub?.cancel();
+    final path = await _recorder.stop();
+    if (!mounted) return;
+    context.pushReplacement('/recording-review', extra: {
+      'audio_path': path ?? _audioPath,
+      'duration': _time,
+      'commercial': widget.commercialUse,
+      'consent_version': widget.consentVersion,
+      'prompt_text': _promptText,
+      'prompt_id': _promptId,
+      'language': DialectPrefs.primaryLang,
+    });
+  }
+
+  Future<void> _cancel() async {
+    _isRecording = false;
+    _pulseController.stop();
+    await _ampSub?.cancel();
+    try {
+      await _recorder.stop();
+    } catch (_) {}
+    if (mounted) {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/dashboard');
+      }
+    }
   }
 
   void _startTimer() async {
@@ -135,20 +185,40 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
               padding: const EdgeInsets.fromLTRB(16, 6, 24, 0),
               child: Row(
                 children: [
-                  AppBackButton(onTap: () => context.canPop() ? context.pop() : context.go('/dashboard')),
+                  AppBackButton(onTap: _cancel),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.red.withValues(alpha: 0.12),
-                      border: Border.all(color: AppColors.red.withValues(alpha: 0.3)),
+                      color: _isRecording
+                          ? AppColors.red.withValues(alpha: 0.12)
+                          : AppColors.surfaceElevated,
+                      border: Border.all(
+                        color: _isRecording
+                            ? AppColors.red.withValues(alpha: 0.3)
+                            : AppColors.hairline,
+                      ),
                       borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
                     child: Row(
                       children: [
-                        Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.red, shape: BoxShape.circle)),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _isRecording ? AppColors.red : AppColors.textSecondary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
                         const SizedBox(width: 6),
-                        const Text('REC', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.red)),
+                        Text(
+                          _isRecording ? 'REC' : 'PRÊT',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: _isRecording ? AppColors.red : AppColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -235,7 +305,7 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
                     height: 8 + 44 * v,
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.red,
+                      color: _isRecording ? AppColors.red : AppColors.textSecondary.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   )).toList(),
@@ -249,24 +319,17 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
                 children: [
                   GestureDetector(
                     onTap: () async {
-                      setState(() => _isRecording = false);
-                      await _ampSub?.cancel();
-                      final path = await _recorder.stop();
-                      if (!context.mounted) return;
-                      context.go('/recording-review', extra: {
-                        'audio_path': path ?? _audioPath,
-                        'duration': _time,
-                        'commercial': widget.commercialUse,
-                        'consent_version': widget.consentVersion,
-                        'prompt_text': _promptText,
-                        'prompt_id': _promptId,
-                        'language': DialectPrefs.primaryLang,
-                      });
+                      if (_starting) return;
+                      if (_isRecording) {
+                        await _stopAndReview();
+                      } else {
+                        await _beginRecording();
+                      }
                     },
                     child: AnimatedBuilder(
                       animation: _pulseController,
                       builder: (context, child) {
-                        final pulse = _pulseController.value;
+                        final pulse = _isRecording ? _pulseController.value : 0.0;
                         return SizedBox(
                           width: 120, height: 120,
                           child: Stack(
@@ -290,10 +353,12 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
                                     boxShadow: [BoxShadow(color: AppColors.red.withValues(alpha: 0.4), blurRadius: 24, offset: const Offset(0, 8))],
                                   ),
                                   child: Center(
-                                    child: Container(
-                                      width: 22, height: 22,
-                                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
-                                    ),
+                                    child: _isRecording
+                                        ? Container(
+                                            width: 22, height: 22,
+                                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
+                                          )
+                                        : const Icon(Icons.mic_rounded, color: Colors.white, size: 34),
                                   ),
                                 ),
                               ),
@@ -304,18 +369,22 @@ class _RecordingScreenState extends State<RecordingScreen> with TickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Appuyez pour arrêter', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  Text(
+                    _isRecording
+                        ? 'Appuyez pour arrêter'
+                        : _loadingPrompt
+                            ? 'Chargement de la phrase…'
+                            : 'Lisez la phrase, puis appuyez pour enregistrer',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                  ),
                 ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 44),
               child: GestureDetector(
-                onTap: () async {
-                  await _ampSub?.cancel();
-                  await _recorder.stop();
-                  if (context.mounted) context.pop();
-                },
+                onTap: _cancel,
                 child: const Text('Annuler sans pénalité',
                   style: TextStyle(fontSize: 15, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
               ),

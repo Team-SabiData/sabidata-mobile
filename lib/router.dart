@@ -24,9 +24,7 @@ import 'screens/leaderboard_screen.dart';
 import 'screens/revenue_screen.dart';
 import 'screens/withdraw_screen.dart';
 import 'screens/dialect_map_screen.dart';
-import 'screens/expert_screen.dart';
 import 'screens/conversion_screen.dart';
-import 'screens/classroom_screen.dart';
 
 // ── Transition ───────────────────────────────────────────────────────────────
 CustomTransitionPage<void> _page(GoRouterState st, Widget child) {
@@ -68,9 +66,7 @@ const _authRoutes = {
   '/profile',
   '/profile-setup',
   '/revenue',
-  '/classroom',
   '/conversion',
-  '/expert',
 };
 
 /// Routes nécessitant le profil complet ET le consentement (activités).
@@ -159,9 +155,7 @@ final GoRouter appRouter = GoRouter(
 
     // ── Revenus & extras ───────────────────────────────────────────────────
     GoRoute(path: '/revenue',    pageBuilder: (c, s) => _page(s, const RevenueScreen())),
-    GoRoute(path: '/expert',     pageBuilder: (c, s) => _page(s, const ExpertScreen())),
     GoRoute(path: '/conversion', pageBuilder: (c, s) => _page(s, const ConversionScreen())),
-    GoRoute(path: '/classroom',  pageBuilder: (c, s) => _page(s, const ClassroomScreen())),
   ],
   errorBuilder: (context, state) => Scaffold(
     backgroundColor: AppColors.bg,

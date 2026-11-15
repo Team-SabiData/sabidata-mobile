@@ -68,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   subtitle: 'Bienvenue,',
                   title: profile?.name ?? 'Contributeur',
                   height: 176,
-                  onTap: () => context.go('/profile'),
+                  onTap: () => context.push('/profile'),
                   trailing: StreakBadge(days: _streak, highlight: _todayClips > 0),
                 ),
               ),
@@ -109,8 +109,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   valueListenable: AuthSession.instance.user,
                   builder: (_, profile, __) {
                     final points = profile?.points ?? 0;
-                    final count = profile?.contributionsValidated ?? 0;
-                    final lvl = LevelInfo.of(profile?.level ?? 'bronze', count);
+                    final lvl = LevelInfo.of(profile?.level ?? '', points,
+                        thresholds: profile?.levelThresholds);
                     return AppCard(
                       accent: true,
                       child: Row(
@@ -140,10 +140,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 Text(
                                     lvl.nextAt == null
                                         ? 'Niveau maximum atteint'
-                                        : 'Prochain palier à ${lvl.nextAt} contributions',
+                                        : 'Encore ${lvl.pointsRemaining(points)} pts pour le prochain niveau',
                                     style: AppText.display(17)),
                                 const SizedBox(height: 6),
-                                Text('$count contributions validées',
+                                Text('$points pts cumulés · ${profile?.contributionsValidated ?? 0} contributions validées',
                                     style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                               ],
                             ),
@@ -167,7 +167,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         icon: Icons.mic_rounded,
                         label: 'Parler',
                         points: 150,
-                        onTap: () => context.go('/recording'),
+                        onTap: () => context.push('/recording'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -177,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         icon: Icons.task_alt_rounded,
                         label: 'Valider',
                         points: 20,
-                        onTap: () => context.go('/validation'),
+                        onTap: () => context.push('/validation'),
                       ),
                     ),
                   ],
@@ -239,22 +239,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _ExploreTile(
                           icon: Icons.edit_note_rounded,
                           label: 'Transcrire',
-                          onTap: () => context.go('/transcription'),
-                        ),
-                        _ExploreTile(
-                          icon: Icons.school_rounded,
-                          label: 'Espace linguiste',
-                          onTap: () => context.go('/expert'),
-                        ),
-                        _ExploreTile(
-                          icon: Icons.groups_rounded,
-                          label: 'Classroom',
-                          onTap: () => context.go('/classroom'),
+                          onTap: () => context.push('/transcription'),
                         ),
                         _ExploreTile(
                           icon: Icons.map_rounded,
                           label: 'Carte des dialectes',
-                          onTap: () => context.go('/dialect-map'),
+                          onTap: () => context.push('/dialect-map'),
                         ),
                       ],
                     ),
@@ -318,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: SpringTap(
-                  onTap: () => context.go('/revenue'),
+                  onTap: () => context.push('/revenue'),
                   child: AppCard(
                     child: Row(
                       children: [
@@ -345,7 +335,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: SpringTap(
-                  onTap: () => context.go('/leaderboard'),
+                  onTap: () => context.push('/leaderboard'),
                   child: AppCard(
                     child: Row(
                       children: [

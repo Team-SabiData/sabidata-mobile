@@ -66,7 +66,7 @@ class _ConversionScreenState extends State<ConversionScreen> {
             title: 'Conversion soumise !',
             message: 'La transcription passe en orthographe standard. Après relecture, elle pourra atteindre le tier Or. +120 points.',
             actionLabel: 'Continuer',
-            onAction: () => context.go('/expert'),
+            onAction: () => context.go('/dashboard'),
           ),
         ),
       );
@@ -81,7 +81,7 @@ class _ConversionScreenState extends State<ConversionScreen> {
               padding: const EdgeInsets.fromLTRB(16, 6, 24, 0),
               child: Row(
                 children: [
-                  AppBackButton(onTap: () => context.canPop() ? context.pop() : context.go('/expert')),
+                  AppBackButton(onTap: () => context.canPop() ? context.pop() : context.go('/dashboard')),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
