@@ -25,6 +25,7 @@ import 'screens/revenue_screen.dart';
 import 'screens/withdraw_screen.dart';
 import 'screens/dialect_map_screen.dart';
 import 'screens/conversion_screen.dart';
+import 'screens/support_chat_screen.dart';
 
 // ── Transition ───────────────────────────────────────────────────────────────
 CustomTransitionPage<void> _page(GoRouterState st, Widget child) {
@@ -67,6 +68,7 @@ const _authRoutes = {
   '/profile-setup',
   '/revenue',
   '/conversion',
+  '/support',
 };
 
 /// Routes nécessitant le profil complet ET le consentement (activités).
@@ -125,6 +127,7 @@ final GoRouter appRouter = GoRouter(
     // ── App principale ─────────────────────────────────────────────────────
     GoRoute(path: '/dashboard',   pageBuilder: (c, s) => _page(s, const DashboardScreen())),
     GoRoute(path: '/profile',     pageBuilder: (c, s) => _page(s, const ProfileScreen())),
+    GoRoute(path: '/support',     pageBuilder: (c, s) => _page(s, const SupportChatScreen())),
 
     // ── Activités (nécessitent consentement) ───────────────────────────────
     GoRoute(path: '/recording', pageBuilder: (c, s) {

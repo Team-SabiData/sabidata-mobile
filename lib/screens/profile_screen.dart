@@ -243,8 +243,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _SettingRow(icon: Icons.help_outline_rounded, label: 'Aide & support', value: '',
-                      onTap: () => showAppSnack(context, 'Centre d\'aide — bientôt disponible.')),
+                    _SettingRow(
+                      icon: Icons.support_agent_rounded,
+                      label: 'Aide & support',
+                      value: 'Chatbot & admin',
+                      onTap: () => context.push('/support'),
+                    ),
                     const SizedBox(height: 24),
                     // Logout
                     GestureDetector(
